@@ -16,7 +16,10 @@ def build(main_src, shell_path, out_path=None):
     bi=body.index('<script type="text/x-dc"'); bj=body.index('>',bi)+1
     ti2=t.index('<script type="text/x-dc"',ti); tj=t.index('>',ti2)+1
     body=body[:bi]+t[ti2:tj]+body[bj:]
-    new_t=t[:ti]+body
+    # the export's helmet is frozen (inlined fonts); append the source's current CSS so style changes reach the site
+    hs=main_src[main_src.index('<helmet>'):main_src.index('</helmet>')]
+    css=hs[hs.index('<style>')+7:hs.rindex('</style>')] if '<style>' in hs else ''
+    new_t=t[:ti]+'<style data-src="main">'+css+'</style>\n'+body
     return t, new_t, d, m
 def _check(src_path):
     src=open(src_path).read()

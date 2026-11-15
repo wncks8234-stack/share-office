@@ -3,35 +3,33 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Yoolmi Office · 3D 시안</title>
-<style>
-html,body{margin:0;height:100%;overflow:hidden;background:#1b1420;font-family:"Noto Sans KR",system-ui,sans-serif;color:#4A3A32}
-canvas#c{display:block;width:100%;height:100%;outline:none}
-.ui{position:absolute;z-index:5}
-.chip{background:rgba(255,251,243,.94);border:1.6px solid #8A766B;border-radius:999px;padding:6px 14px;font-size:13px;font-weight:500}
-#top{left:16px;top:14px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-#title{font-size:15px;font-weight:600}
-#btns{right:16px;bottom:16px;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
-button{font:inherit;font-size:13px;font-weight:500;min-height:44px;padding:0 16px;border-radius:999px;border:1.6px solid #8A766B;background:#FFFBF3;color:#4A3A32;cursor:pointer}
-button[aria-pressed="true"]{background:#F5C542}
-#hint{left:16px;bottom:16px;max-width:520px;line-height:1.5}
-#near{left:50%;bottom:84px;transform:translateX(-50%);display:none;font-size:14px}
-#toast{left:50%;top:70px;transform:translateX(-50%);display:none}
-#mini{right:16px;top:14px;width:176px;height:128px;border-radius:14px;border:1.6px solid #8A766B;background:#FFFBF3}
-</style>
+<title>Yoolmi Office · 3D 한옥 둘러보기</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Noto+Sans+KR:wght@400;500;700&family=Noto+Serif+KR:wght@700&display=swap">
+<style>html,body{margin:0;height:100%;overflow:hidden;background:#1b1420;font-family:"Noto Sans KR",system-ui,sans-serif}#host{position:absolute;inset:0}</style>
 </head>
 <body>
-<canvas id="c" tabindex="0" aria-label="3D 오피스. 방향키나 WASD로 걸어요"></canvas>
-<div id="top" class="ui"><span id="title" class="chip">Yoolmi Office · 3D 시안</span><span id="clock" class="chip"></span><span id="room" class="chip"></span></div>
-<canvas id="mini" class="ui" width="352" height="256" aria-hidden="true"></canvas>
-<div id="near" class="ui chip" role="status"></div>
-<div id="toast" class="ui chip" role="status"></div>
-<div id="hint" class="ui chip">WASD·방향키: 걷기 &nbsp;·&nbsp; 마우스 드래그 / Q·E: 둘러보기 &nbsp;·&nbsp; 휠: 확대 &nbsp;·&nbsp; Enter: 물건 열기 &nbsp;·&nbsp; V: 1인칭</div>
-<div id="btns" class="ui">
-  <button id="bView" type="button" aria-pressed="false">1인칭으로 보기</button>
-  <button id="bTod" type="button">낮·밤 바꾸기</button>
-</div>
-<script src="three.min.js"></script>
-<script src="office3d.js"></script>
+<div id="host"></div>
+<script src="../o3d/three.min.js"></script>
+<script src="../o3d/hanok3d.js?v=6"></script>
+<script>
+(function () {
+  var Q = new URLSearchParams(location.search), n = function (k) { return Q.get(k) == null ? undefined : +Q.get(k); };
+  var o = { capture: Q.get('cap') || false, es: Q.get('es') === '1', fp: Q.get('fp') === '1', light: Q.get('light') === '1', yaw: n('yaw'), pitch: n('pitch'), dist: n('dist'), name: '나',
+    look: { tc: '#F7C9C9', hc: '#A0674A', item: 'book', hair: 'soft', face: 'grin' } };
+  if (Q.get('tod')) o.night = Q.get('tod') === 'night';
+  if (Q.get('px')) o.start = { x: n('px'), z: n('pz'), dir: n('dir') == null ? Math.PI : n('dir') };
+  var eng = Hanok3D.create(document.getElementById('host'), o);
+  if (!eng) { document.body.innerHTML = '<p style="color:#fff;padding:24px">이 브라우저에서는 3D를 열 수 없어요.</p>'; return; }
+  eng.setPeople([
+    { id: 'a', name: '마케터 1', look: { tc: '#F6D79A', hc: '#5A3426', item: 'phone', hair: 'curly', face: 'happy' }, x: 3.6, z: 6.2, dir: 1.6 },
+    { id: 'b', name: '선생님 1', look: { tc: '#C9E8C2', hc: '#3B3236', item: 'book', hair: 'long', face: 'smile', acc: 'glasses' }, x: 26, z: 4.2, dir: 0 },
+    { id: 'c', name: '개발자 1', look: { tc: '#BFD9F2', hc: '#3B3236', item: 'laptop', hair: 'spiky', face: 'wink', acc: 'phones' }, x: 10.8, z: 21.4, dir: 2 },
+    { id: 'd', name: '마케터 2', look: { tc: '#DCD0F2', hc: '#C98E9A', item: 'mug', hair: 'straight', face: 'wow', acc: 'ribbon' }, x: 16.4, z: 13.9, dir: -2.2 }
+  ]);
+  eng.setSeats({ mk: ['다니엘라', '카밀라'], tc: ['소피아'], dev: ['개발자 1'], op: ['율미'] });
+  eng.setBoard({ stages: [['문의', 4], ['상담 예약', 2], ['상담 완료', 3], ['결제 대기', 1], ['수강 중', 6], ['보류·이탈', 1]], pend: 1, late: 0 });
+  eng.focus(); window.eng = eng;
+})();
+</script>
 </body>
 </html>
