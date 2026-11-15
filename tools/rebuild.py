@@ -41,7 +41,31 @@ def write_site(main_dc_path, out_dir):
     open(os.path.join(out_dir,'index.html'),'w').write(page)
     return sorted(set(ids))
 
-if __name__=='__main__':
+
+def update_avatar(avatar_path, shell_path=None):
+    """Replace the character part (Avatar.dc.html) stored inside tools/shell.html."""
+    import gzip, base64
+    shell_path = shell_path or os.path.join(os.path.dirname(os.path.abspath(__file__)), 'shell.html')
+    d = open(shell_path).read()
+    m = re.search(r'(<script type="__bundler/manifest">)(.*?)(</script>)', d, re.S)
+    man = json.loads(m.group(2))
+    src = open(avatar_path).read()
+    hit = None
+    for k, v in man.items():
+        if v.get('mime') == 'text/html':
+            raw = base64.b64decode(v['data']); raw = gzip.decompress(raw) if v.get('compressed') else raw
+            if '<title>오피스 캐릭터</title>' in raw.decode('utf-8', 'ignore'): hit = k
+    if not hit: raise SystemExit('avatar part not found')
+    man[hit]['data'] = base64.b64encode(gzip.compress(src.encode(), mtime=0)).decode(); man[hit]['compressed'] = True
+    d = d[:m.start(2)] + '\n' + json.dumps(man) + '\n' + d[m.end(2):]
+    open(shell_path, 'w').write(d)
+    return hit
+
+
+if __name__=='__main__' and len(sys.argv) > 2 and sys.argv[1] == '--avatar':
+    print(update_avatar(sys.argv[2])); sys.exit(0)
+elif __name__=='__main__':
     # usage: python3 tools/rebuild.py path/to/Main.dc.html  (writes index.html in the repo root)
     root=os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     print(write_site(sys.argv[1], root))
+
