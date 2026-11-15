@@ -492,7 +492,7 @@ function create(host, opts) {
 
   // ---------- input ----------
   var keys = {}, yaw = opts.yaw == null ? 0 : opts.yaw, pitch = opts.pitch == null ? .9 : opts.pitch, dist = opts.dist || 9, drag = null, moved = 0;
-  function kd(e) { if (e.metaKey || e.ctrlKey || e.altKey) return; var k = e.key.length === 1 ? e.key.toLowerCase() : e.key; keys[k] = true; if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].indexOf(e.key) >= 0) e.preventDefault(); if (k === 'v' && !light) setFp(!fp); if (k === 'Enter') openZone(); }
+  function kd(e) { if (e.metaKey || e.ctrlKey || e.altKey) return; var k = e.key.length === 1 ? e.key.toLowerCase() : e.key; keys[k] = true; if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].indexOf(e.key) >= 0) e.preventDefault(); if (k === 'v' && !light) cycleView(); if (k === 'Enter') openZone(); }
   function ku(e) { var k = e.key.length === 1 ? e.key.toLowerCase() : e.key; keys[k] = false; }
   canvas.addEventListener('keydown', kd); canvas.addEventListener('keyup', ku); canvas.addEventListener('blur', function () { keys = {}; });
   canvas.addEventListener('pointerdown', function (e) { canvas.focus({ preventScroll: true }); drag = { x: e.clientX, y: e.clientY }; moved = 0; canvas.style.cursor = 'grabbing'; try { canvas.setPointerCapture(e.pointerId); } catch (er) {} });
@@ -501,19 +501,25 @@ function create(host, opts) {
   canvas.addEventListener('wheel', function (e) { e.preventDefault(); autoCam = null; dist = Math.max(3.2, Math.min(24, dist + e.deltaY * .012)); }, { passive: false });
   var ray = new T.Raycaster(), v2 = new T.Vector2();
   function pick(e) { var r = canvas.getBoundingClientRect(); v2.set((e.clientX - r.left) / r.width * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1); ray.setFromCamera(v2, light ? ocam : cam); var best = null, bd = 1e9; Object.keys(others).forEach(function (id) { var o = others[id], hit = ray.intersectObject(o.G, true); if (hit.length && hit[0].distance < bd) { bd = hit[0].distance; best = id; } }); if (best && opts.onPerson) opts.onPerson(best); }
-  function setFp(v) { fp = v; autoCam = null; pitch = v ? 0 : (curZone && curZone !== 'yard' ? 1.12 : .9); meG.visible = !v; labels(); try { canvas.focus({ preventScroll: true }); } catch (e) {} }
-  function setLight(v) { light = !!v; if (light) fp = false; meG.visible = !fp; R.shadowMap.enabled = !light && qLevel < 3; scene.traverse(function (o) { if (o.material) o.material.needsUpdate = true; }); W = 0; resize(); labels(); labScale(); try { localStorage.setItem('yo3d-light', light ? '1' : '0'); } catch (e) {} }
-  bView.addEventListener('click', function () { setFp(!fp); }); bLight.addEventListener('click', function () { setLight(!light); canvas.focus({ preventScroll: true }); });
+  var viewMode = opts.fp ? 'fp' : (opts.view || 'auto'), fpB = opts.fp ? 1 : 0, zoneT = 9, viewZone = '', tv3 = new T.Vector3();
+  if (!opts.fp && !opts.view) { try { var vm0 = localStorage.getItem('yo3d-view'); if (vm0 === 'follow' || vm0 === 'fp' || vm0 === 'auto') viewMode = vm0; } catch (e) {} }
+  function topView(z) { return { pitch: 1.14, dist: z === 'pav' ? 9.5 : z === 'bug' ? 8.5 : 12 }; }
+  function wantFp() { return !light && (viewMode === 'fp' || (viewMode === 'auto' && (viewZone || 'yard') === 'yard')); }
+  function syncView() { var w = wantFp(); if (w === fp) return; if (w) { yaw = P.dir - Math.PI; pitch = 0; autoCam = null; } else { var ins = viewZone && viewZone !== 'yard'; pitch = .55; autoCam = ins ? topView(viewZone) : { pitch: .9, dist: 9 }; } fp = w; labels(); }
+  function cycleView() { viewMode = viewMode === 'auto' ? 'follow' : viewMode === 'follow' ? 'fp' : 'auto'; try { localStorage.setItem('yo3d-view', viewMode); } catch (e) {} syncView(); labels(); try { canvas.focus({ preventScroll: true }); } catch (e) {} }
+  function setFp(v) { viewMode = v ? 'fp' : 'follow'; syncView(); labels(); }
+  function setLight(v) { light = !!v; if (light) fp = false; meG.visible = !fp; R.shadowMap.enabled = !light && qLevel < 3; scene.traverse(function (o) { if (o.material) o.material.needsUpdate = true; }); W = 0; resize(); syncView(); labels(); labScale(); try { localStorage.setItem('yo3d-light', light ? '1' : '0'); } catch (e) {} }
+  bView.addEventListener('click', cycleView); bLight.addEventListener('click', function () { setLight(!light); canvas.focus({ preventScroll: true }); });
   var curZone = '', autoCam = null, outView = null, pLift = 0, pEff = .9;
   function openZone() { if (curZone && curZone !== 'yard' && opts.onOpen) opts.onOpen(curZone); }
   promptEl.addEventListener('click', openZone);
   function labels() {
-    bView.textContent = fp ? (es ? 'Vista normal' : '따라가기 시점') : (es ? 'Primera persona' : '1인칭'); bView.style.display = light ? 'none' : '';
+    bView.textContent = (es ? 'Vista: ' : '시점: ') + (viewMode === 'auto' ? (es ? 'auto' : '자동') : viewMode === 'follow' ? (es ? 'seguir' : '따라가기') : (es ? '1ª persona' : '1인칭')); bView.style.display = light ? 'none' : '';
     bLight.textContent = light ? (es ? 'Modo 3D' : '3D로 보기') : (es ? 'Modo ligero' : '가벼운 모드');
     canvas.setAttribute('aria-label', es ? 'Oficina 3D. Flechas o WASD para caminar' : '3D 오피스. 방향키나 WASD로 걸어요');
     var z = ZN[curZone || 'yard']; zoneEl.textContent = z[es ? 1 : 0];
     if (curZone && curZone !== 'yard') { promptEl.style.display = 'block'; promptEl.textContent = 'Enter · ' + z[es ? 3 : 2]; } else promptEl.style.display = 'none';
-    hintEl.textContent = es ? 'WASD / flechas: caminar · Arrastrar: mirar · Rueda: zoom · V: primera persona' : 'WASD·방향키: 걷기 · 드래그: 둘러보기 · 휠: 확대 · V: 1인칭';
+    hintEl.textContent = es ? 'WASD / flechas: caminar · Arrastrar o ← →: mirar · V: cambiar vista' : 'WASD·방향키: 걷기 · 드래그나 ← →: 둘러보기 · V: 시점 바꾸기';
   }
   var seen = false; try { seen = localStorage.getItem('yo3d-hint') === '1'; localStorage.setItem('yo3d-hint', '1'); } catch (e) {}
   if (seen || opts.capture) hintEl.style.display = 'none'; else setTimeout(function () { hintEl.style.opacity = '0'; }, 9000);
@@ -537,7 +543,8 @@ function create(host, opts) {
     if (!wrap.isConnected) return;
     resize(); var dt = Math.min(.05, (now - last) / 1000), t = now / 1000; last = now; frame++;
     // movement
-    var f = (keys.w || keys.ArrowUp ? 1 : 0) - (keys.s || keys.ArrowDown ? 1 : 0), sd = (keys.d || keys.ArrowRight ? 1 : 0) - (keys.a || keys.ArrowLeft ? 1 : 0);
+    var f = (keys.w || keys.ArrowUp ? 1 : 0) - (keys.s || keys.ArrowDown ? 1 : 0), sd = fp ? (keys.d ? 1 : 0) - (keys.a ? 1 : 0) : (keys.d || keys.ArrowRight ? 1 : 0) - (keys.a || keys.ArrowLeft ? 1 : 0);
+    if (fp) yaw += ((keys.ArrowLeft ? 1 : 0) - (keys.ArrowRight ? 1 : 0)) * dt * 2.1;
     if (!light) { if (keys.q) yaw += dt * 1.8; if (keys.e) yaw -= dt * 1.8; }
     var vx = 0, vz = 0, spd = keys.Shift ? 5.2 : 3.2;
     if (f || sd) { var cy = light ? 0 : yaw, fx = -Math.sin(cy), fz = -Math.cos(cy), rx = Math.cos(cy), rz = -Math.sin(cy), n = Math.hypot(f, sd); vx = (fx * f + rx * sd) / n * spd; vz = (fz * f + rz * sd) / n * spd; }
@@ -548,22 +555,25 @@ function create(host, opts) {
     Object.keys(others).forEach(function (id) { var o = others[id], c = o.c, dx = o.t.x - c.x, dz = o.t.z - c.z, d = Math.hypot(dx, dz); if (d > 6) { c.x = o.t.x; c.z = o.t.z; d = 0; } if (d > .03) { var s = Math.min(d, Math.max(3.4, d * 4) * dt); c.x += dx / d * s; c.z += dz / d * s; var td = Math.atan2(dx, dz), dd = ((td - c.dir + Math.PI * 3) % (Math.PI * 2)) - Math.PI; c.dir += dd * Math.min(1, dt * 12); c.walk = Math.min(1, c.walk + dt * 6); } else { c.walk = Math.max(0, c.walk - dt * 6); if (o.t.dir != null) { var d2 = ((o.t.dir - c.dir + Math.PI * 3) % (Math.PI * 2)) - Math.PI; c.dir += d2 * Math.min(1, dt * 8); } } c.y += (hAt(c.x, c.z) - c.y) * Math.min(1, dt * 12); pose(o.G, c, t + o.ph); });
     for (var ci = 0; ci < clouds.length; ci++) { var cg = clouds[ci].G; cg.position.x += clouds[ci].v * dt; if (cg.position.x > 200) cg.position.x = -170; }
     // zone
-    var z = zoneAt(P.x, P.z); if (z !== curZone) { var wasIn = curZone && curZone !== 'yard', isIn = z !== 'yard'; if (!fp && !light) { if (isIn && !wasIn) { outView = { pitch: pitch, dist: dist }; autoCam = { pitch: 1.14, dist: z === 'pav' ? 9.5 : z === 'bug' ? 8.5 : 12 }; } else if (!isIn && wasIn) autoCam = outView || { pitch: .9, dist: 9 }; } curZone = z; labels(); if (opts.onZone) opts.onZone(z); }
+    var z = zoneAt(P.x, P.z); if (z !== curZone) { var wasIn = curZone && curZone !== 'yard', isIn = z !== 'yard'; if (viewMode === 'follow' && !light) { if (isIn && !wasIn) { outView = { pitch: pitch, dist: dist }; autoCam = topView(z); } else if (!isIn && wasIn) autoCam = outView || { pitch: .9, dist: 9 }; } curZone = z; zoneT = opts.capture ? 9 : 0; labels(); if (opts.onZone) opts.onZone(z); }
+    zoneT += dt; if (zoneT > .22 && viewZone !== curZone) { viewZone = curZone; syncView(); }
     if (autoCam && !fp && !light) { var ak = opts.capture ? 1 : Math.min(1, dt * 3.5); pitch += (autoCam.pitch - pitch) * ak; dist += (autoCam.dist - dist) * ak; if (Math.abs(autoCam.pitch - pitch) < .01 && Math.abs(autoCam.dist - dist) < .05) autoCam = null; }
     // roofs
     var k, ocl = []; for (k in roofs) { var hide = light || (!fp && (k === z || (k === 'gate' && P.z > 22.9 && Math.abs(P.x - 15) < 1.9))); fadeRoof(roofs[k], hide ? 0 : 1, light || opts.capture ? 1 : dt); if (!hide && roofs[k].un) ocl.push(roofs[k].un); }
     // camera
     var C;
     if (light) { C = ocam; ocam.position.set(15, 60, 12.25); ocam.up.set(0, 0, -1); ocam.lookAt(15, 0, 12.25); }
-    else if (fp) { C = cam; cam.position.set(P.x, P.y + .78 + Math.abs(Math.sin(t * 9)) * .02 * P.walk, P.z); tv.set(P.x - Math.sin(yaw) * Math.cos(pitch), P.y + .78 + Math.sin(pitch), P.z - Math.cos(yaw) * Math.cos(pitch)); cam.lookAt(tv); }
     else {
       C = cam; camTgt.lerp(tv.set(P.x, P.y + .7, P.z), Math.min(1, dt * 8));
       var dd = dist, pe = pitch, tries = 0;
-      if (frame % 3 === 0 || opts.capture) { for (; tries < 9; tries++) { tv2.set(Math.sin(yaw) * Math.cos(pe), Math.sin(pe), Math.cos(yaw) * Math.cos(pe)); ray.set(tv.set(P.x, P.y + .18, P.z), tv2); ray.far = dist; if (!ocl.length || !ray.intersectObjects(ocl, false).length) break; pe = Math.min(1.5, pe + .09); } pLift = pe - pitch; }
+      fpB += ((fp ? 1 : 0) - fpB) * (opts.capture ? 1 : Math.min(1, dt * 4.2)); if (Math.abs((fp ? 1 : 0) - fpB) < .003) fpB = fp ? 1 : 0; meG.visible = fpB < .55;
+      if (fp) pLift = 0; else if (frame % 3 === 0 || opts.capture) { for (; tries < 9; tries++) { tv2.set(Math.sin(yaw) * Math.cos(pe), Math.sin(pe), Math.cos(yaw) * Math.cos(pe)); ray.set(tv.set(P.x, P.y + .18, P.z), tv2); ray.far = dist; if (!ocl.length || !ray.intersectObjects(ocl, false).length) break; pe = Math.min(1.5, pe + .09); } pLift = pe - pitch; }
       pEff += ((pitch + pLift) - pEff) * (opts.capture ? 1 : Math.min(1, dt * 5)); pe = pEff;
       tv2.set(Math.sin(yaw) * Math.cos(pe), Math.sin(pe), Math.cos(yaw) * Math.cos(pe));
       if (occ.length) { ray.set(camTgt, tv2); ray.far = dist; var hit = ray.intersectObjects(occ, false); if (hit.length) dd = Math.max(2.2, hit[0].distance - .45); }
-      tv.copy(camTgt).addScaledVector(tv2, dd); camPos.lerp(tv, Math.min(1, dt * 10)); cam.position.copy(camPos); cam.lookAt(camTgt);
+      tv.copy(camTgt).addScaledVector(tv2, dd); camPos.lerp(tv, Math.min(1, dt * 10));
+      if (fpB > 0) { var eb = fpB * fpB * (3 - 2 * fpB), ey = P.y + .78 + Math.abs(Math.sin(t * 9)) * .02 * P.walk, fpit = fp ? pitch : 0; tv.set(P.x, ey, P.z); cam.position.copy(camPos).lerp(tv, eb); tv3.set(P.x - Math.sin(yaw) * Math.cos(fpit), ey + Math.sin(fpit), P.z - Math.cos(yaw) * Math.cos(fpit)); tv.copy(camTgt).lerp(tv3, eb); cam.lookAt(tv); }
+      else { cam.position.copy(camPos); cam.lookAt(camTgt); }
     }
     if (compact && frame % 3) return;
     if (!light && R.shadowMap.enabled && frame % (qLevel >= 2 ? 3 : 2) === 0) R.shadowMap.needsUpdate = true;
@@ -573,7 +583,7 @@ function create(host, opts) {
     if (frame % 8 === 0) { var key = P.x.toFixed(2) + ',' + P.z.toFixed(2) + ',' + P.dir.toFixed(1); if (key !== lastSent) { lastSent = key; if (opts.onMove) opts.onMove(+P.x.toFixed(2), +P.z.toFixed(2), +P.dir.toFixed(2), z); try { sessionStorage.setItem('yo3d-pos', JSON.stringify({ x: P.x, z: P.z, dir: P.dir })); } catch (e) {} } }
     if (nightAuto && frame % 1800 === 0) { var nn = seoulHour() < 6 || seoulHour() >= 18; if (nn !== night) setNight(nn); }
   }
-  mkZoneLabs(); labScale(); if (fp) setFp(true); if (light) setLight(true); labels(); resize(); requestAnimationFrame(tick);
+  mkZoneLabs(); labScale(); if (light) setLight(true); labels(); resize(); requestAnimationFrame(tick);
 
   // ---------- API ----------
   return {

@@ -10,11 +10,11 @@
 <body>
 <div id="host"></div>
 <script src="../o3d/three.min.js"></script>
-<script src="../o3d/hanok3d.js?v=6"></script>
+<script src="../o3d/hanok3d.js?v=7"></script>
 <script>
 (function () {
   var Q = new URLSearchParams(location.search), n = function (k) { return Q.get(k) == null ? undefined : +Q.get(k); };
-  var o = { capture: Q.get('cap') || false, es: Q.get('es') === '1', fp: Q.get('fp') === '1', light: Q.get('light') === '1', yaw: n('yaw'), pitch: n('pitch'), dist: n('dist'), name: '나',
+  var o = { capture: Q.get('cap') || false, es: Q.get('es') === '1', fp: Q.get('fp') === '1', view: Q.get('view') || undefined, light: Q.get('light') === '1', yaw: n('yaw'), pitch: n('pitch'), dist: n('dist'), name: '나',
     look: { tc: '#F7C9C9', hc: '#A0674A', item: 'book', hair: 'soft', face: 'grin' } };
   if (Q.get('tod')) o.night = Q.get('tod') === 'night';
   if (Q.get('px')) o.start = { x: n('px'), z: n('pz'), dir: n('dir') == null ? Math.PI : n('dir') };
