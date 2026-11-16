@@ -21,7 +21,7 @@ function create(host, opts) {
   var btns = el('div', 'position:absolute;right:12px;bottom:12px;display:flex;gap:6px');
   function mkBtn(label) { var b = el('button', 'min-height:40px;padding:0 14px;cursor:pointer;font-family:inherit;' + CHIP, btns); b.type = 'button'; b.textContent = label; return b; }
   var bView = mkBtn(''), bLight = mkBtn('');
-  var hintEl = el('div', 'position:absolute;left:50%;top:14px;transform:translateX(-50%);padding:7px 16px;pointer-events:none;transition:opacity .8s;white-space:nowrap;' + CHIP);
+  var hintEl = el('div', 'position:absolute;left:50%;top:56px;transform:translateX(-50%);padding:7px 16px;pointer-events:none;transition:opacity .8s;white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis;font-size:12.5px;' + CHIP);
   var mini = el('canvas', 'position:absolute;left:12px;bottom:12px;width:150px;height:123px;border-radius:12px;border:1.4px solid #8A766B;background:#F7F1E6;pointer-events:none');
   mini.width = 300; mini.height = 246; var mctx = mini.getContext('2d');
 
@@ -605,7 +605,7 @@ function create(host, opts) {
     setSeats: function (d) { var kk = JSON.stringify(d); if (kk === this._sk) return; this._sk = kk; setSeats(d); },
     setLight: setLight, setFp: setFp, setBlinds: setBlinds,
     getPos: function () { return { x: P.x, z: P.z, dir: P.dir, zone: curZone }; },
-    setView: function (o) { if (o.yaw != null) yaw = o.yaw; if (o.pitch != null) pitch = o.pitch; if (o.dist != null) dist = o.dist; if (o.x != null) { P.x = o.x; P.z = o.z; camTgt.set(P.x, .7, P.z); camPos.set(P.x, 6, P.z + 6); } },
+    setView: function (o) { if (o.yaw != null) yaw = o.yaw; if (o.pitch != null) pitch = o.pitch; if (o.dist != null) dist = o.dist; if (o.x != null && free(o.x, o.z)) { P.x = o.x; P.z = o.z; P.y = hAt(P.x, P.z); camTgt.set(P.x, P.y + .7, P.z); camPos.set(P.x, 6, P.z + 6); } },
     attach: function (h) { if (wrap.parentNode !== h) h.appendChild(wrap); W = 0; },
     focus: function () { try { canvas.focus({ preventScroll: true }); } catch (e) {} },
     isLight: function () { return light; },
