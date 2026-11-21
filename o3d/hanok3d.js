@@ -161,7 +161,7 @@ function create(host, opts) {
   // ---------- hanok building ----------
   function lantern(parent, x, y, z) {
     cyl(.01, .01, .3, mInk, x, y + .15, z, parent, 5, true);
-    var mm = new T.MeshStandardMaterial({ color: '#E05A4E', emissive: '#FF8A5A', emissiveIntensity: .15, roughness: .9 }), mb = new T.MeshStandardMaterial({ color: '#5E86C6', emissive: '#6FA0FF', emissiveIntensity: .1, roughness: .9 });
+    var mm = new T.MeshStandardMaterial({ color: '#B5574A', emissive: '#FF8A5A', emissiveIntensity: .15, roughness: .9 }), mb = new T.MeshStandardMaterial({ color: '#5F7396', emissive: '#6FA0FF', emissiveIntensity: .1, roughness: .9 });
     cyl(.1, .1, .14, mb, x, y - .07, z, parent, 10, true); cyl(.1, .1, .14, mm, x, y - .21, z, parent, 10, true); cyl(.07, .07, .03, mInk, x, y + .01, z, parent, 10, true); cyl(.07, .07, .03, mInk, x, y - .29, z, parent, 10, true);
     glow.push({ m: mm, d: .15, n: 1.3 }, { m: mb, d: .1, n: .9 });
   }
@@ -209,16 +209,16 @@ function create(host, opts) {
 
   // ---------- furniture ----------
   function lowDesk(parent, x, z, w, d, ry) { var G = grp(x, FH, z, parent, ry || 0); box(w, .05, d, mWoodL, 0, .36, 0, G); box(w - .1, .06, d - .1, mWood, 0, .31, 0, G); [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(function (s) { box(.06, .3, .06, mWoodD, s[0] * (w / 2 - .07), .15, s[1] * (d / 2 - .07), G); }); return G; }
-  function cushion(x, y, z, col, parent) { var c = cyl(.27, .29, .09, M(col, { roughness: 1 }), x, y + .045, z, parent, 18); return c; }
+  function cushion(x, y, z, col, parent) { col = ['#B9A78C', '#8E9AA3', '#A3907A'][Math.abs(Math.round(x * 7 + z * 3)) % 3]; var c = cyl(.27, .29, .09, M(col, { roughness: 1 }), x, y + .045, z, parent, 18); return c; }
   function laptop(parent, x, y, z, rot) { var G = grp(x, y, z, parent, rot || 0); box(.3, .015, .21, M('#C3CBD4', { metalness: .4, roughness: .4 }), 0, .008, 0, G, true); var s = box(.3, .2, .012, M('#2E3442'), 0, .105, -.11, G, true); s.rotation.x = -.2; var sm = new T.MeshStandardMaterial({ color: '#8FD0FF', emissive: '#6FB8F0', emissiveIntensity: .7 }); var scr = box(.27, .17, .004, sm, 0, .105, -.102, G, true); scr.rotation.x = -.2; }
   function deskLamp(parent, x, y, z) { cyl(.05, .06, .02, mInk, x, y + .01, z, parent, 10, true); cyl(.01, .01, .2, mInk, x, y + .11, z, parent, 6, true); var sm = new T.MeshStandardMaterial({ color: '#FFF1CC', emissive: '#FFC870', emissiveIntensity: .3, side: T.DoubleSide, roughness: .9 }); var sh = new T.Mesh(new T.CylinderGeometry(.05, .09, .1, 14, 1, true), sm); sh.position.set(x, y + .24, z); parent.add(sh); glow.push({ m: sm, d: .3, n: 1.5 }); }
-  function mug(parent, x, y, z, col) { cyl(.04, .035, .08, M(col, { roughness: .4 }), x, y + .04, z, parent, 12, true); }
+  function mug(parent, x, y, z, col) { col = Math.round(x * 10) % 2 ? '#EDE6DA' : '#D9E0D6'; cyl(.04, .035, .08, M(col, { roughness: .4 }), x, y + .04, z, parent, 12, true); }
   function paper(parent, x, y, z, rot) { var m = box(.2, .006, .15, M('#FFFBF2', { roughness: 1 }), x, y + .004, z, parent, true); m.rotation.y = rot || 0; }
-  function books(parent, x, y, z, len, alongX, seed) { var r = rnd(seed), cols = ['#E07A5F', '#F6C760', '#7FA8C9', '#9BD3A8', '#C6A6E0', '#E98FA0', '#F2A86F'], u = 0; while (u < len - .05) { var bw = .045 + r() * .04, bh = .17 + r() * .08, m = M(cols[Math.floor(r() * 7)], { roughness: .85 }); if (alongX) box(bw, bh, .14, m, x + u + bw / 2, y + bh / 2, z, parent, true); else box(.14, bh, bw, m, x, y + bh / 2, z + u + bw / 2, parent, true); u += bw + .004; } }
+  function books(parent, x, y, z, len, alongX, seed) { var r = rnd(seed), cols = ['#7A5A44', '#A68B6B', '#5E6E66', '#4E5A6E', '#C9B99A', '#8C4A3A', '#D9CBB8'], u = 0; while (u < len - .05) { var bw = .045 + r() * .04, bh = .17 + r() * .08, m = M(cols[Math.floor(r() * 7)], { roughness: .85 }); if (alongX) box(bw, bh, .14, m, x + u + bw / 2, y + bh / 2, z, parent, true); else box(.14, bh, bw, m, x, y + bh / 2, z + u + bw / 2, parent, true); u += bw + .004; } }
   function shelf(x, z, len, alongX, seed) { var G = grp(x, FH, z, scene, alongX ? 0 : Math.PI / 2); box(len, 1.3, .04, mWoodD, 0, .65, -.17, G); [.03, .45, .87, 1.29].forEach(function (yy, i) { box(len, .04, .36, mWood, 0, yy, 0, G); if (i < 3) books(G, -len / 2 + .06, yy + .02, 0, len - .12, true, seed + i); }); box(.04, 1.3, .36, mWoodD, -len / 2, .65, 0, G); box(.04, 1.3, .36, mWoodD, len / 2, .65, 0, G); if (alongX) ob(x - len / 2, z - .22, x + len / 2, z + .22); else ob(x - .22, z - len / 2, x + .22, z + len / 2); }
   function pot(x, y, z, s) { var G = grp(x, y, z); G.scale.setScalar(s || 1); cyl(.2, .14, .28, M('#EDE6DA', { roughness: .5 }), 0, .14, 0, G, 14); var lm = [M('#6FA866', { roughness: 1 }), M('#8CC47E', { roughness: 1 })]; [[0, .5, 0, .24], [.14, .42, .06, .17], [-.13, .44, .08, .18], [.02, .62, -.1, .16]].forEach(function (p, i) { var l = new T.Mesh(new T.IcosahedronGeometry(p[3], 1), lm[i % 2]); l.position.set(p[0], p[1], p[2]); l.castShadow = true; G.add(l); }); obc(x, z, .18 * (s || 1)); }
 
-  var mMat = new T.MeshStandardMaterial({ map: tex(256, 256, function (c, w, h) { c.fillStyle = '#E9DBB4'; c.fillRect(0, 0, w, h); c.strokeStyle = 'rgba(150,120,70,.22)'; c.lineWidth = 1; for (var y = 0; y < h; y += 3) { c.beginPath(); c.moveTo(0, y); c.lineTo(w, y); c.stroke(); } c.lineWidth = 3; c.strokeStyle = '#B5473C'; c.strokeRect(9, 9, w - 18, h - 18); c.strokeStyle = '#3F6AA8'; c.strokeRect(15, 15, w - 30, h - 30); }), roughness: 1 });
+  var mMat = new T.MeshStandardMaterial({ map: tex(256, 256, function (c, w, h) { c.fillStyle = '#E9DBB4'; c.fillRect(0, 0, w, h); c.strokeStyle = 'rgba(150,120,70,.22)'; c.lineWidth = 1; for (var y = 0; y < h; y += 3) { c.beginPath(); c.moveTo(0, y); c.lineTo(w, y); c.stroke(); } c.lineWidth = 2; c.strokeStyle = '#9A7A52'; c.strokeRect(10, 10, w - 20, h - 20); }), roughness: 1 });
   mMat.map.wrapS = mMat.map.wrapT = T.ClampToEdgeWrapping;
   var mScreen = M('#F6EEDC', { roughness: 1 });
   var seats = {}, seatData = {};
@@ -228,11 +228,11 @@ function create(host, opts) {
   // 대청: 현황판 + 여섯 단계 탁자
   var boardCv = document.createElement('canvas'); boardCv.width = 1024; boardCv.height = 400; var boardTx = new T.CanvasTexture(boardCv); boardTx.encoding = T.sRGBEncoding;
   var boardData = null;
-  var STC = ['#8FB8E8', '#B9A6E0', '#F5C542', '#F2A86F', '#7CC38C', '#C9BFB3'];
+  var STC = ['#D9CBB8', '#C2AD92', '#A68B6B', '#7A5F45', '#7E9A7A', '#B8B0A6'];
   function drawBoard() {
     var c = boardCv.getContext('2d'), d = boardData || {}, st = d.stages || [['문의', '-'], ['상담 예약', '-'], ['상담 완료', '-'], ['결제 대기', '-'], ['수강 중', '-'], ['보류·이탈', '-']];
     c.fillStyle = '#FBF6EC'; c.fillRect(0, 0, 1024, 400); c.fillStyle = '#3F3129'; c.font = '700 40px "Noto Sans KR",sans-serif'; c.textAlign = 'left'; c.textBaseline = 'middle'; c.fillText(d.title || (es ? 'Estudiantes' : '학생 창구 현황'), 40, 52);
-    c.font = '500 26px "Noto Sans KR",sans-serif'; c.textAlign = 'right'; c.fillStyle = d.pend ? '#B03A48' : '#6B5D52'; c.fillText((es ? 'Recibidos: ' : '넘겨받은 일 ') + (d.pend == null ? '-' : d.pend) + '   ·   ' + (es ? 'Vencidos: ' : '마감 지남 ') + (d.late == null ? '-' : d.late), 984, 54);
+    c.font = '500 26px "Noto Sans KR",sans-serif'; c.textAlign = 'right'; c.fillStyle = d.pend ? '#8E3B2B' : '#6B5D52'; c.fillText((es ? 'Recibidos: ' : '넘겨받은 일 ') + (d.pend == null ? '-' : d.pend) + '   ·   ' + (es ? 'Vencidos: ' : '마감 지남 ') + (d.late == null ? '-' : d.late), 984, 54);
     st.slice(0, 4).forEach(function (s, i) { var x = 40 + i * 168; c.fillStyle = '#FFFFFF'; c.strokeStyle = '#E6DED3'; c.lineWidth = 3; c.beginPath(); if (c.roundRect) c.roundRect(x, 100, 152, 262, 18); else c.rect(x, 100, 152, 262); c.fill(); c.stroke(); c.fillStyle = STC[i]; c.beginPath(); if (c.roundRect) c.roundRect(x, 100, 152, 16, [18, 18, 0, 0]); else c.rect(x, 100, 152, 16); c.fill(); c.fillStyle = '#3F3129'; c.textAlign = 'center'; c.font = '700 96px "Fredoka","Noto Sans KR",sans-serif'; c.fillText(String(s[1]), x + 76, 222); c.font = '500 25px "Noto Sans KR",sans-serif'; c.fillStyle = '#6B5D52'; c.fillText(s[0], x + 76, 322); });
     c.strokeStyle = '#D9CFC2'; c.lineWidth = 3; c.beginPath(); c.moveTo(722, 104); c.lineTo(722, 358); c.stroke(); c.textAlign = 'left'; c.font = '500 22px "Noto Sans KR",sans-serif'; c.fillStyle = '#7A6A5C'; c.fillText(es ? 'Resultado' : '결과', 748, 116);
     st.slice(4).forEach(function (s, i) { var y = 140 + i * 112; c.fillStyle = '#F7F4EF'; c.beginPath(); if (c.roundRect) c.roundRect(746, y, 238, 98, 16); else c.rect(746, y, 238, 98); c.fill(); c.fillStyle = STC[4 + i]; c.beginPath(); c.arc(772, y + 49, 9, 0, 7); c.fill(); c.fillStyle = '#5F5046'; c.textAlign = 'left'; c.font = '500 24px "Noto Sans KR",sans-serif'; c.fillText(s[0], 792, y + 51); c.textAlign = 'right'; c.fillStyle = '#3F3129'; c.font = '700 52px "Fredoka","Noto Sans KR",sans-serif'; c.fillText(String(s[1]), 968, y + 53); });
@@ -260,7 +260,7 @@ function create(host, opts) {
     var d = lowDesk(scene, X(1.75), zc, 1.6, .8, dirX > 0 ? Math.PI / 2 : -Math.PI / 2); laptop(d, 0, .385, .02, 0); deskLamp(d, .58, .385, -.24); mug(d, -.55, .385, .22, ['#FFFBF3', '#F7B8C4', '#BFE3C8'][i % 3]); paper(d, -.5, .385, -.16, .3);
     ob(X(1.75) - .45, zc - .85, X(1.75) + .45, zc + .85); cushion(X(.85), FH, zc, col);
     // wall pin board
-    box(.04, .8, 1.7, M('#C9A06A', { roughness: 1 }), X(.17), FH + 1.25, zc); ['#FFE08A', '#F7B8C4', '#BFE3C8', '#BFD9F2', '#FFFBF2'].forEach(function (c, j) { var n = box(.012, .22, .22, M(c, { roughness: 1 }), X(.2), FH + 1.42 - (j % 2) * .34, zc - .6 + j * .3, scene, true); n.rotation.x = ((j * 37) % 5 - 2) * .05; });
+    box(.04, .8, 1.7, M('#C9A06A', { roughness: 1 }), X(.17), FH + 1.25, zc); ['#F6EFE0', '#EFE6D2', '#F6EFE0', '#E9E0CC', '#FBF6EA'].forEach(function (c, j) { var n = box(.012, .22, .22, M(c, { roughness: 1 }), X(.2), FH + 1.42 - (j % 2) * .34, zc - .6 + j * .3, scene, true); n.rotation.x = ((j * 37) % 5 - 2) * .05; });
     // low cabinet + small things
     var cz = zc - 1.82; box(1.5, .46, .4, mWood, X(1.0), FH + .23, cz); box(1.56, .04, .44, mWoodL, X(1.0), FH + .48, cz); ob(X(1.0) - .78, cz - .22, X(1.0) + .78, cz + .22);
     books(scene, X(1.0) - .6, FH + .5, cz, .55, true, 60 + i * 7 + (dirX > 0 ? 0 : 30)); var p = cyl(.09, .07, .13, M('#EDE6DA', { roughness: .5 }), X(1.0) + .45, FH + .565, cz, scene, 12, true); var lf = new T.Mesh(new T.IcosahedronGeometry(.13, 1), M('#7DBB72', { roughness: 1 })); lf.position.set(X(1.0) + .45, FH + .74, cz); scene.add(lf);
@@ -296,7 +296,7 @@ function create(host, opts) {
     var G = grp(b.x0 + 1, FH, b.z1 - .75); box(.62, .9, .5, M('#C9614C', { roughness: .6 }), 0, .45, 0, G); box(.7, .08, .58, M('#A84A3A'), 0, .93, 0, G); box(.36, .035, .02, M('#2A1E18'), 0, .7, -.26, G, true);
     var lt = tex(256, 96, function (c, w, h) { c.fillStyle = '#FFF7EA'; c.fillRect(0, 0, w, h); c.fillStyle = '#3F3129'; c.font = '700 44px "Noto Sans KR",sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('오류 제보', w / 2, h / 2 + 2); }); lt.wrapS = lt.wrapT = T.ClampToEdgeWrapping;
     var lp = new T.Mesh(new T.PlaneGeometry(.5, .19), new T.MeshStandardMaterial({ map: lt })); lp.position.set(0, .45, -.256); lp.rotation.y = Math.PI; G.add(lp); ob(b.x0 + .62, b.z1 - 1.05, b.x0 + 1.38, b.z1 - .45);
-    box(1.9, 1.0, .05, M('#C9A06A', { roughness: 1 }), cx + .3, FH + 1.2, b.z1 - .2); ['#FFE08A', '#F7B8C4', '#BFE3C8', '#BFD9F2', '#FFE08A', '#FFFBF2'].forEach(function (c, i) { var n = box(.22, .24, .01, M(c, { roughness: 1 }), cx - .35 + (i % 3) * .58 + .1, FH + 1.42 - Math.floor(i / 3) * .42, b.z1 - .235, scene, true); n.rotation.z = ((i * 37) % 5 - 2) * .05; });
+    box(1.9, 1.0, .05, M('#C9A06A', { roughness: 1 }), cx + .3, FH + 1.2, b.z1 - .2); ['#F6EFE0', '#EFE6D2', '#F6EFE0', '#E9E0CC', '#F6EFE0', '#FBF6EA'].forEach(function (c, i) { var n = box(.22, .24, .01, M(c, { roughness: 1 }), cx - .35 + (i % 3) * .58 + .1, FH + 1.42 - Math.floor(i / 3) * .42, b.z1 - .235, scene, true); n.rotation.z = ((i * 37) % 5 - 2) * .05; });
     var d = lowDesk(scene, b.x1 - .95, b.z0 + 1.6, 1.3, .7, -Math.PI / 2); laptop(d, 0, .385, 0, 0); mug(d, .45, .385, .2, '#BFD9F2'); ob(b.x1 - 1.35, b.z0 + .9, b.x1 - .55, b.z0 + 2.3); cushion(b.x1 - 1.75, FH, b.z0 + 1.6, '#8CB4D0'); seatPlate('dev', 0, b.x1 - .55, b.z0 + .55, Math.PI);
   })();
 
@@ -307,7 +307,7 @@ function create(host, opts) {
     var base = cyl(r + .25, r + .35, .3, mStone, 0, .15, 0, G, 6); base.rotation.y = Math.PI / 2;
     var fl = cyl(r, r, PH - .28, mMaru, 0, .28 + (PH - .28) / 2, 0, G, 6); fl.rotation.y = Math.PI / 2;
     var V = []; for (var k = 0; k < 6; k++) V.push([Math.cos(k * Math.PI / 3) * (r - .35), Math.sin(k * Math.PI / 3) * (r - .35)]);
-    var mRed = M('#8C3A2B', { roughness: .6 }), mJade = M('#5E8E7B', { roughness: .7 }), mDc = M('#D9B45A', { roughness: .6 });
+    var mRed = M('#8C3A2B', { roughness: .6 }), mJade = M('#71897E', { roughness: .75 }), mDc = M('#BFA775', { roughness: .7 });
     V.forEach(function (p) { cyl(.14, .15, 2.15, mRed, p[0], PH + 1.075, p[1], G, 14); cyl(.155, .155, .12, mJade, p[0], PH + 1.95, p[1], G, 14); cyl(.2, .24, .1, mStoneD, p[0], PH + .03, p[1], G, 10); });
     for (k = 0; k < 6; k++) { var a = V[k], b = V[(k + 1) % 6], mx = (a[0] + b[0]) / 2, mz = (a[1] + b[1]) / 2, L = Math.hypot(b[0] - a[0], b[1] - a[1]), ang = -Math.atan2(b[1] - a[1], b[0] - a[0]);
       var S = grp(mx, PH, mz, G, ang); box(L, .2, .18, mJade, 0, 2.1, 0, S); box(L, .04, .2, mRed, 0, 1.99, 0, S); [-1, 1].forEach(function (e2) { box(.1, .21, .19, mDc, e2 * (L / 2 - .32), 2.1, 0, S); });
@@ -349,7 +349,7 @@ function create(host, opts) {
     var G = grp(15, 0, WZ); [-1.6, 1.6].forEach(function (x) { cyl(.17, .18, 2.7, mCol, x, 1.35, 0, G, 14); cyl(.26, .3, .14, mStoneD, x, .07, 0, G, 10); });
     box(3.6, .26, .26, mCol, 0, 2.62, 0, G);
     [-1, 1].forEach(function (s) { var d = grp(s * 1.45, 0, 0, G, s * 1.25); var dm = box(1.35, 2.2, .08, mWood, -s * .68, 1.2, 0, d); for (var i = 0; i < 3; i++) box(1.35, .06, .1, mWoodD, -s * .68, .4 + i * .8, 0, d); cyl(.06, .06, .03, M('#C9A25A', { metalness: .6, roughness: .4 }), -s * 1.15, 1.2, s > 0 ? -.05 : -.05, d, 12).rotation.x = Math.PI / 2; });
-    var tg = tex(128, 128, function (c, w, h) { c.clearRect(0, 0, w, h); c.beginPath(); c.arc(64, 64, 58, Math.PI, 0); c.fillStyle = '#C8392F'; c.fill(); c.beginPath(); c.arc(64, 64, 58, 0, Math.PI); c.fillStyle = '#2F5DA8'; c.fill(); c.beginPath(); c.arc(35, 64, 29, 0, 7); c.fillStyle = '#C8392F'; c.fill(); c.beginPath(); c.arc(93, 64, 29, 0, 7); c.fillStyle = '#2F5DA8'; c.fill(); }); tg.wrapS = tg.wrapT = T.ClampToEdgeWrapping;
+    var tg = tex(128, 128, function (c, w, h) { c.clearRect(0, 0, w, h); c.beginPath(); c.arc(64, 64, 58, Math.PI, 0); c.fillStyle = '#A9483E'; c.fill(); c.beginPath(); c.arc(64, 64, 58, 0, Math.PI); c.fillStyle = '#4A6490'; c.fill(); c.beginPath(); c.arc(35, 64, 29, 0, 7); c.fillStyle = '#A9483E'; c.fill(); c.beginPath(); c.arc(93, 64, 29, 0, 7); c.fillStyle = '#4A6490'; c.fill(); }); tg.wrapS = tg.wrapT = T.ClampToEdgeWrapping;
     G.children.forEach(function (d) { if (!d.isGroup) return; var sx = d.children[0].position.x; [-1, 1].forEach(function (f) { var p = new T.Mesh(new T.CircleGeometry(.3, 28), new T.MeshStandardMaterial({ map: tg, transparent: true, roughness: .8 })); p.position.set(sx, 1.45, f * .046); if (f < 0) p.rotation.y = Math.PI; p.userData.keep = true; d.add(p); }); });
     var rf = roof(15, WZ, 4.4, 1.5, true, 2.75, .55); rf.G.scale.set(1, .8, 1); roofs.gate = rf;
     var pq = plaque('율미', 1.3); pq.position.set(0, 2.3, -.2); pq.rotation.y = Math.PI; G.add(pq);
@@ -530,9 +530,9 @@ function create(host, opts) {
   // ---------- minimap ----------
   function drawMini() {
     var c = mctx, s = 300 / WX; c.clearRect(0, 0, 300, 246); c.fillStyle = '#EDE3CF'; c.fillRect(0, 0, 300, 246);
-    var col = { hall: '#FFE9A8', mk: '#F9D3DE', tc: '#DDF0DF', bug: '#E3E0F5' };
+    var col = { hall: '#EFE3C8', mk: '#E9DCCB', tc: '#E3E0D0', bug: '#E5DED6' };
     BL.forEach(function (b) { c.fillStyle = col[b.k]; c.strokeStyle = '#8A766B'; c.lineWidth = 2; c.fillRect(b.x0 * s, b.z0 * s, (b.x1 - b.x0) * s, (b.z1 - b.z0) * s); c.strokeRect(b.x0 * s, b.z0 * s, (b.x1 - b.x0) * s, (b.z1 - b.z0) * s); });
-    c.fillStyle = '#CFE6F7'; c.beginPath(); for (var k = 0; k < 6; k++) { var a = k * Math.PI / 3; c[k ? 'lineTo' : 'moveTo']((PAV.x + Math.cos(a) * PAV.r) * s, (PAV.z + Math.sin(a) * PAV.r) * s); } c.closePath(); c.fill(); c.stroke();
+    c.fillStyle = '#DCE3E0'; c.beginPath(); for (var k = 0; k < 6; k++) { var a = k * Math.PI / 3; c[k ? 'lineTo' : 'moveTo']((PAV.x + Math.cos(a) * PAV.r) * s, (PAV.z + Math.sin(a) * PAV.r) * s); } c.closePath(); c.fill(); c.stroke();
     Object.keys(others).forEach(function (id) { var o = others[id]; c.fillStyle = (o.look && o.look.tc) || '#BFD9F2'; c.strokeStyle = '#3F3129'; c.lineWidth = 2; c.beginPath(); c.arc(o.c.x * s, o.c.z * s, 6, 0, 7); c.fill(); c.stroke(); });
     c.fillStyle = '#3F3129'; c.beginPath(); c.arc(P.x * s, P.z * s, 7, 0, 7); c.fill(); c.strokeStyle = '#F5C542'; c.lineWidth = 3; c.stroke();
   }
